@@ -1,0 +1,12 @@
+# Lean 4
+lean/.lake/
+lean/build/
+lean/lake-packages/
+
+# Editor
+.vscode/
+*.swp
+*~
+
+# OS
+.DS_Store
