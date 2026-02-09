@@ -16,3 +16,4 @@ import LeanPrimeIR.StableHLO.Expr
 import LeanPrimeIR.StableHLO.Serialize
 import LeanPrimeIR.StableHLO.Polynomial
 import LeanPrimeIR.StableHLO.KZG
+import LeanPrimeIR.StableHLO.Correctness
