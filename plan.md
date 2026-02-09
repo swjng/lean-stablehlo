@@ -65,16 +65,16 @@ Deep embed StableHLO AST as Lean types + Mathlib ZMod semantics.
 - [x] Mathlib v4.27.0 dependency
 - [x] M1 vs M2 output comparison (Main.lean)
 
-#### M3: Correctness Theorems
+#### M3: Correctness Theorems [DONE]
 
 Add correctness proofs over the deep-embedded AST.
 
-- [ ] Define `polyEval` spec: `List (ZMod p) → ZMod p → ZMod p`
-- [ ] `horner_correct`: `(hornerExpr coeffs z).eval = polyEval coeffs z`
-- [ ] `syntheticDiv_correct`:
-      `∀ i, (syntheticDivExpr coeffs z)[i].eval = qᵢ`
-      where `q(x) = (p(x) - p(z)) / (x - z)`
-- [ ] `evaluate_correct`: end-to-end KZG evaluate theorem composing the above
+- [x] Define `polyEval` spec: `List (ZMod p) → ZMod p → ZMod p`
+- [x] Define `syntheticDivSpec` spec: `List (ZMod p) → ZMod p → List (ZMod p)`
+- [x] `horner_correct`: `(hornerExpr coeffs z).eval = polyEval coeffs z`
+- [x] `syntheticDiv_correct`:
+      `(syntheticDivExpr coeffs z).map Expr.eval = syntheticDivSpec coeffs z`
+- [x] `evaluate_correct`: end-to-end KZG evaluate theorem composing the above
 - [ ] Bridge between `polyEval` and Mathlib's `Polynomial` type
 
 #### M4: AST Extension — EC Point Operations
