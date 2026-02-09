@@ -14,9 +14,42 @@
 
 import LeanPrimeIR.Field
 
-namespace LeanPrimeIR
+namespace LeanPrimeIR.Polynomial
 
--- List-based polynomial over 𝔽ₚ
--- TODO: implement after M0 validation
+/-- Horner evaluation of polynomial at point z.
+    Given coefficients [c₀, c₁, ..., cₙ] and point z,
+    computes p(z) = (...((cₙ * z + cₙ₋₁) * z + cₙ₋₂)...) * z + c₀ -/
+def hornerEval (coeffs : List Value) (z : Value) : IRBuilder Value := do
+  match coeffs.reverse with
+  | [] => Field.const 0
+  | [c] => return c
+  | cn :: rest =>
+    let mut acc := cn
+    for ci in rest do
+      let t ← Field.mul acc z
+      acc ← Field.add t ci
+    return acc
 
-end LeanPrimeIR
+/-- Synthetic division: compute quotient q(x) = (p(x) - p(z)) / (x - z).
+    Given coefficients [c₀, c₁, ..., cₙ] (ascending) and point z,
+    returns quotient coefficients [q₀, q₁, ..., qₙ₋₁] (ascending).
+
+    Algorithm (descending):
+      qₙ₋₁ = cₙ
+      qᵢ₋₁ = cᵢ + z * qᵢ  for i = n-1, ..., 1 -/
+def syntheticDiv (coeffs : List Value) (z : Value) : IRBuilder (List Value) := do
+  match coeffs.reverse with
+  | [] | [_] => return []
+  | cn :: rest =>
+    -- rest = [cₙ₋₁, cₙ₋₂, ..., c₁, c₀] (descending, but we skip c₀)
+    let inner := rest.dropLast  -- [cₙ₋₁, cₙ₋₂, ..., c₁]
+    let mut acc := cn
+    let mut quotient : List Value := [acc]
+    for ci in inner do
+      let t ← Field.mul z acc
+      acc ← Field.add ci t
+      quotient := acc :: quotient
+    -- quotient is [q₀, q₁, ..., qₙ₋₁] after reversal from construction
+    return quotient
+
+end LeanPrimeIR.Polynomial

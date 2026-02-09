@@ -23,3 +23,6 @@ package «lean-prime-ir» where
 @[default_target]
 lean_lib «LeanPrimeIR» where
   srcDir := "."
+
+lean_exe «lean-prime-ir» where
+  root := `Main

@@ -12,12 +12,12 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 
-import LeanPrimeIR.IR
+import LeanPrimeIR.KZG
 
-namespace LeanPrimeIR.EllipticCurve
+open LeanPrimeIR
 
--- EC point operations via StableHLO field ops
--- TODO: implement in M1+ (StableHLO has no native EC ops;
--- point arithmetic will be expressed as field ops on coordinates)
-
-end LeanPrimeIR.EllipticCurve
+def main : IO Unit := do
+  -- Generate StableHLO for KZG evaluate with test vectors:
+  -- p(x) = 1 + 2x + 3x² + 4x³, z = 5
+  -- Expected: p(5) = 586, quotient = [117, 23, 4]
+  IO.println (KZG.evaluateModule [1, 2, 3, 4] 5)

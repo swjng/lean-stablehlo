@@ -13,11 +13,7 @@
 -- limitations under the License.
 
 import LeanPrimeIR.IR
-
-namespace LeanPrimeIR.EllipticCurve
-
--- EC point operations via StableHLO field ops
--- TODO: implement in M1+ (StableHLO has no native EC ops;
--- point arithmetic will be expressed as field ops on coordinates)
-
-end LeanPrimeIR.EllipticCurve
+import LeanPrimeIR.Field
+import LeanPrimeIR.Polynomial
+import LeanPrimeIR.EllipticCurve
+import LeanPrimeIR.KZG

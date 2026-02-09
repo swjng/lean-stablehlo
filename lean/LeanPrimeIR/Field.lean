@@ -12,9 +12,40 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 
-namespace LeanPrimeIR
+import LeanPrimeIR.IR
 
--- PrimeField p: 𝔽ₚ arithmetic
--- TODO: implement after M0 validation
+namespace LeanPrimeIR.Field
 
-end LeanPrimeIR
+/-- Emit `stablehlo.constant dense<val> : tensor<!SFm>`. -/
+def const (val : Int) (ty : MLIRType := BN254.SFm) : IRBuilder Value := do
+  let name ← freshName
+  emit s!"  {name} = stablehlo.constant dense<{val}> : {ty}"
+  return ⟨name, ty⟩
+
+private def binOp (opName : String) (lhs rhs : Value) : IRBuilder Value := do
+  let name ← freshName
+  emit s!"  {name} = stablehlo.{opName} {lhs.name}, {rhs.name} : {lhs.ty}"
+  return ⟨name, lhs.ty⟩
+
+/-- Emit `stablehlo.add`. -/
+def add (lhs rhs : Value) : IRBuilder Value := binOp "add" lhs rhs
+
+/-- Emit `stablehlo.multiply`. -/
+def mul (lhs rhs : Value) : IRBuilder Value := binOp "multiply" lhs rhs
+
+/-- Emit `stablehlo.subtract`. -/
+def sub (lhs rhs : Value) : IRBuilder Value := binOp "subtract" lhs rhs
+
+/-- Emit `stablehlo.divide`. -/
+def div (lhs rhs : Value) : IRBuilder Value := binOp "divide" lhs rhs
+
+/-- Emit `stablehlo.power`. -/
+def pow (base exp : Value) : IRBuilder Value := binOp "power" base exp
+
+/-- Emit `stablehlo.negate`. -/
+def neg (operand : Value) : IRBuilder Value := do
+  let name ← freshName
+  emit s!"  {name} = stablehlo.negate {operand.name} : {operand.ty}"
+  return ⟨name, operand.ty⟩
+
+end LeanPrimeIR.Field
