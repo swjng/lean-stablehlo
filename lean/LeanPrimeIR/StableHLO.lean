@@ -12,19 +12,7 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 
-import Lake
-open Lake DSL
-
-package «lean-prime-ir» where
-  leanOptions := #[
-    ⟨`autoImplicit, false⟩
-  ]
-
-require "leanprover-community" / "mathlib" @ git "v4.27.0"
-
-@[default_target]
-lean_lib «LeanPrimeIR» where
-  srcDir := "."
-
-lean_exe «lean-prime-ir» where
-  root := `Main
+import LeanPrimeIR.StableHLO.Expr
+import LeanPrimeIR.StableHLO.Serialize
+import LeanPrimeIR.StableHLO.Polynomial
+import LeanPrimeIR.StableHLO.KZG

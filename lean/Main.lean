@@ -13,11 +13,29 @@
 -- limitations under the License.
 
 import LeanPrimeIR.KZG
+import LeanPrimeIR.StableHLO
 
 open LeanPrimeIR
 
+/-- BN254 scalar field prime. -/
+private abbrev bn254p : Nat :=
+  21888242871839275222246405745257275088548364400416034343698204186575808495617
+
+private instance : NeZero bn254p := ⟨by decide⟩
+
+/-- Convert a `ZMod bn254p` value to its string representation. -/
+private def zmodToStr (v : ZMod bn254p) : String :=
+  toString v.val
+
 def main : IO Unit := do
-  -- Generate StableHLO for KZG evaluate with test vectors:
-  -- p(x) = 1 + 2x + 3x² + 4x³, z = 5
-  -- Expected: p(5) = 586, quotient = [117, 23, 4]
+  -- M1 string codegen (existing)
+  IO.println "=== M1: String Codegen ==="
   IO.println (KZG.evaluateModule [1, 2, 3, 4] 5)
+
+  IO.println ""
+
+  -- M2 deep embedding
+  IO.println "=== M2: Deep Embedding ==="
+  let coeffs : List (ZMod bn254p) := [1, 2, 3, 4]
+  let z : ZMod bn254p := 5
+  IO.println (StableHLO.KZG.evaluateModule bn254p coeffs z StableHLO.bn254SFm zmodToStr)

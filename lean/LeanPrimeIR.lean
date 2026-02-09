@@ -17,3 +17,4 @@ import LeanPrimeIR.Field
 import LeanPrimeIR.Polynomial
 import LeanPrimeIR.EllipticCurve
 import LeanPrimeIR.KZG
+import LeanPrimeIR.StableHLO
