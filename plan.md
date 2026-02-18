@@ -75,19 +75,27 @@ Add correctness proofs over the deep-embedded AST.
 - [x] `syntheticDiv_correct`:
       `(syntheticDivExpr coeffs z).map Expr.eval = syntheticDivSpec coeffs z`
 - [x] `evaluate_correct`: end-to-end KZG evaluate theorem composing the above
-- [ ] Bridge between `polyEval` and Mathlib's `Polynomial` type
+- [x] Bridge between `polyEval` and Mathlib's `Polynomial` type
+      (`polyEval_eq_polynomial_eval` via `listPoly` + `Polynomial.ofFn`)
+- [x] `syntheticDivSpec` mathematical correctness:
+      `q(x) · (x - z) + p(z) = p(x)` (`syntheticDiv_polynomial_correct`)
 
 #### M4: AST Extension — EC Point Operations
 
 Add elliptic curve operations to Expr (StableHLO has no native EC ops,
 so point arithmetic is expressed as field ops on coordinates).
 
+- [ ] `Fact (Nat.Prime p)` instance for BN254 (needed for field ops: div, inv)
 - [ ] Affine point type: `(Expr p, Expr p)`
 - [ ] Point addition (short Weierstrass): `add_affine`
 - [ ] Point doubling: `double_affine`
 - [ ] Scalar multiplication (double-and-add)
 - [ ] MSM (multi-scalar multiplication) — Pippenger or naive
 - [ ] EC ops correctness: prove `eval` results match Lean's EC group law
+- [ ] `Expr.div` zero-division semantics: `ZMod p` returns 0 for 0⁻¹,
+      ensure StableHLO lowering matches this behavior
+- [ ] Tree AST blowup mitigation for scalar mul (double-and-add produces
+      exponential tree without sharing; may need AST-level let-binding or CSE)
 
 #### M5: Full KZG Commitment Scheme
 
@@ -96,6 +104,7 @@ Implement KZG commit + prove + verify via deep embedding.
 - [ ] `kzg_commit`: MSM(SRS, coeffs) → commitment point
 - [ ] `kzg_prove`: quotient poly → MSM → proof point
 - [ ] `kzg_verify`: pairing check (pairing may be axiomatized)
+- [ ] If pairing axiomatized: verify axiom consistency (no `False` derivable)
 - [ ] End-to-end: commit → prove → verify pipeline
 - [ ] Equivalence check against M0 hand-written MLIR output
 
@@ -127,6 +136,8 @@ Make the embedded DSL ergonomic for protocol authors.
 
 Strengthen trust in the serializer (the only unverified component).
 
+- [ ] Verify `valStr` (ZMod p → String) correctness: `v.val` produces
+      the decimal string that StableHLO `dense<>` expects
 - [ ] Round-trip test: serialize → parse → compare AST
 - [ ] MLIR syntax conformance (parseable by prime-ir-opt)
 - [ ] Property-based testing for the serializer
@@ -137,8 +148,14 @@ Strengthen trust in the serializer (the only unverified component).
 #### M9: Production Pipeline
 
 - [ ] Remove M1 string codegen (fully replaced by deep embedding)
+- [ ] M2 output execution validation: pipe generated StableHLO through
+      stablehlo → prime-ir → llvm pipeline and compare against M0 results
 - [ ] Integration tests with `prime-ir-opt` pipeline
 - [ ] CI: `lake build` + correctness theorem verification
+- [ ] Document trust assumptions:
+      - StableHLO `field.pf` ops ↔ ZMod p arithmetic correspondence
+      - `stablehlo.constant dense<v>` takes standard form value, lowering
+        handles Montgomery conversion (SFm type)
 - [ ] Documentation: trust model, library API guide, tutorial
 
 ## Dependencies
