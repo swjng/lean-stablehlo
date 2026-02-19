@@ -40,6 +40,12 @@ def bn254SFm : FieldType :=
     bitwidth := 256
     montgomery := true }
 
+/-- BN254 base (point coordinate) field in Montgomery form. -/
+def bn254PFm : FieldType :=
+  { modulus := "21888242871839275222246405745257275088696311157297823662689037894645226208583"
+    bitwidth := 256
+    montgomery := true }
+
 /-- Serialization state: SSA counter + accumulated MLIR lines. -/
 structure SerState where
   nextId : Nat := 0
@@ -93,6 +99,12 @@ def serialize {p : Nat} (ft : FieldType) (valStr : ZMod p → String) : Expr p �
     let la ← serialize ft valStr a
     let name ← freshSSA
     emitLine s!"  {name} = stablehlo.negate {la} : {ft}"
+    return name
+  | .div a b => do
+    let la ← serialize ft valStr a
+    let lb ← serialize ft valStr b
+    let name ← freshSSA
+    emitLine s!"  {name} = stablehlo.divide {la}, {lb} : {ft}"
     return name
 
 /-- Run serialization and collect all MLIR lines. -/
