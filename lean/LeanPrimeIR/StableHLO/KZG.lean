@@ -13,11 +13,18 @@
 -- limitations under the License.
 
 import LeanPrimeIR.StableHLO.Polynomial
+import LeanPrimeIR.StableHLO.EllipticCurve
+import LeanPrimeIR.StableHLO.BN254
+import LeanPrimeIR.StableHLO.Pairing
 import LeanPrimeIR.StableHLO.Serialize
 
 namespace LeanPrimeIR.StableHLO.KZG
 
-open Polynomial Expr
+open Polynomial Expr BN254
+
+-- ============================================================================
+-- KZG Evaluate (existing M2)
+-- ============================================================================
 
 /-- Build KZG evaluate AST: Horner evaluation + synthetic division.
     Returns (evalExpr, quotientExprs). -/
@@ -54,5 +61,74 @@ def evaluateModule (p : Nat) [NeZero p]
   let ret := s!"  return {retNames} : {retTypes}"
 
   s!"{typeAlias}\n{funcSig}\n{body}\n\n{ret}\n}"
+
+-- ============================================================================
+-- SRS (Structured Reference String)
+-- ============================================================================
+
+/-- SRS for KZG: a list of G₁ points [G, [s]G, [s²]G, ...].
+    At the AST level, these are `AffinePoint basePrime` values
+    whose coordinates are `Expr basePrime`. -/
+structure SRS where
+  /-- G₁ points: srs[i] should equal [sⁱ] · G₁.gen. -/
+  g1Points : List (AffinePoint basePrime)
+
+-- ============================================================================
+-- KZG Commit
+-- ============================================================================
+
+/-- KZG commitment: C = MSM(SRS, coeffs) = Σ coeffs[i] · SRS[i].
+    Takes scalar-field coefficients (as Nat via `.val`) and base-field SRS points.
+    Returns an `AffinePoint basePrime`. -/
+def commit (coeffs : List (ZMod scalarPrime)) (srs : SRS)
+    : AffinePoint basePrime :=
+  msm (coeffs.map ZMod.val) srs.g1Points
+
+-- ============================================================================
+-- KZG Prove
+-- ============================================================================
+
+/-- KZG prove result: commitment, evaluation value, quotient, and proof. -/
+structure ProveResult where
+  /-- Commitment C = MSM(SRS, coeffs). -/
+  commitment : AffinePoint basePrime
+  /-- Evaluation expression v = p(z) as `Expr scalarPrime`. -/
+  evalValue : Expr scalarPrime
+  /-- Quotient coefficient expressions [q₀, ..., qₙ₋₁] as `Expr scalarPrime`. -/
+  quotientCoeffs : List (Expr scalarPrime)
+  /-- Proof π = MSM(SRS[0..deg(q)], q_coeffs). -/
+  proof : AffinePoint basePrime
+
+/-- Full KZG prove pipeline:
+    1. Commit: C = MSM(SRS, coeffs)
+    2. Evaluate: v = p(z) via Horner
+    3. Quotient: q(x) = (p(x) - p(z)) / (x - z) via synthetic division
+    4. Proof: π = MSM(SRS[0..deg(q)], q_coeffs)
+
+    Polynomial operations use scalar field; EC operations use base field. -/
+def prove (coeffs : List (ZMod scalarPrime)) (z : ZMod scalarPrime)
+    (srs : SRS) : ProveResult :=
+  let c := commit coeffs srs
+  let (evalExpr, quotExprs) := evaluateExprs coeffs z
+  let quotScalars := quotExprs.map (fun e => e.eval.val)
+  let pi := msm quotScalars (srs.g1Points.take quotExprs.length)
+  { commitment := c
+    evalValue := evalExpr
+    quotientCoeffs := quotExprs
+    proof := pi }
+
+-- ============================================================================
+-- KZG Verify (spec-level predicate)
+-- ============================================================================
+
+/-- KZG verification equation (spec-level, uses axiomatized pairing).
+    Checks: e(π, [s]G₂ - [z]G₂) = e(C - [v]G₁, G₂)
+
+    This is a `Prop`, not an AST computation. Pairings are not expressible
+    as StableHLO field ops — the verifier runs natively, not in MLIR. -/
+def verify (C : Pairing.G1) (z v : ZMod scalarPrime) (π : Pairing.G1)
+    (sG2 G2gen : Pairing.G2) : Prop :=
+  Pairing.e π (Pairing.G2.add sG2 (Pairing.G2.smul (-z) G2gen)) =
+  Pairing.e (Pairing.G1.add C (Pairing.G1.smul (-v) Pairing.G1.gen)) G2gen
 
 end LeanPrimeIR.StableHLO.KZG
