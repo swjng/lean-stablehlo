@@ -27,6 +27,20 @@ private instance : NeZero bn254p := ⟨by decide⟩
 private def zmodToStr (v : ZMod bn254p) : String :=
   toString v.val
 
+private abbrev bp : Nat := StableHLO.BN254.basePrime
+
+private instance : NeZero bp := ⟨StableHLO.BN254.basePrime_prime.ne_zero⟩
+
+/-- BN254 generator G = (1, 2) as an `AffinePoint bp`. -/
+private def bnG : StableHLO.AffinePoint bp :=
+  some (.const 1, .const 2)
+
+/-- Serialize an `AffinePoint` for display. -/
+private def showPoint (pt : StableHLO.AffinePoint bp) : String :=
+  match pt with
+  | none => "∞"
+  | some (x, y) => s!"({x.eval.val}, {y.eval.val})"
+
 def main : IO Unit := do
   -- M1 string codegen (existing)
   IO.println "=== M1: String Codegen ==="
@@ -39,3 +53,10 @@ def main : IO Unit := do
   let coeffs : List (ZMod bn254p) := [1, 2, 3, 4]
   let z : ZMod bn254p := 5
   IO.println (StableHLO.KZG.evaluateModule bn254p coeffs z StableHLO.bn254SFm zmodToStr)
+
+  IO.println ""
+
+  -- M4: EC point operations
+  IO.println "=== M4: EC Point Operations ==="
+  IO.println s!"G = {showPoint bnG}"
+  IO.println s!"[5]G = {showPoint (StableHLO.scalarMul 5 bnG)}"

@@ -17,3 +17,6 @@ import LeanPrimeIR.StableHLO.Serialize
 import LeanPrimeIR.StableHLO.Polynomial
 import LeanPrimeIR.StableHLO.KZG
 import LeanPrimeIR.StableHLO.Correctness
+import LeanPrimeIR.StableHLO.BN254
+import LeanPrimeIR.StableHLO.EllipticCurve
+import LeanPrimeIR.StableHLO.EllipticCurve.Correctness
