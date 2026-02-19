@@ -97,16 +97,18 @@ so point arithmetic is expressed as field ops on coordinates).
 - [ ] Tree AST blowup mitigation for scalar mul (double-and-add produces
       exponential tree without sharing; deferred to future `Expr.let` or CSE)
 
-#### M5: Full KZG Commitment Scheme
+#### M5: Full KZG Commitment Scheme [DONE]
 
 Implement KZG commit + prove + verify via deep embedding.
 
-- [ ] `kzg_commit`: MSM(SRS, coeffs) → commitment point
-- [ ] `kzg_prove`: quotient poly → MSM → proof point
-- [ ] `kzg_verify`: pairing check (pairing may be axiomatized)
-- [ ] If pairing axiomatized: verify axiom consistency (no `False` derivable)
-- [ ] End-to-end: commit → prove → verify pipeline
-- [ ] Equivalence check against M0 hand-written MLIR output
+- [x] `kzg_commit`: MSM(SRS, coeffs) → commitment point
+- [x] `kzg_prove`: quotient poly → MSM → proof point
+- [x] `kzg_verify`: pairing check (pairing axiomatized)
+- [x] If pairing axiomatized: verify axiom consistency (conservative extension,
+      trivial model G₁=G₂=G_T=ZMod p with e(a,b)=a*b witnesses consistency)
+- [x] End-to-end: commit → prove → verify pipeline (`kzg_correctness` theorem,
+      no sorry — fully proven via polynomial identity + pairing bilinearity)
+- [ ] Equivalence check against M0 hand-written MLIR output (deferred to M9)
 
 ### Phase 2: Library Interface
 
