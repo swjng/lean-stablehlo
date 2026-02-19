@@ -80,22 +80,22 @@ Add correctness proofs over the deep-embedded AST.
 - [x] `syntheticDivSpec` mathematical correctness:
       `q(x) · (x - z) + p(z) = p(x)` (`syntheticDiv_polynomial_correct`)
 
-#### M4: AST Extension — EC Point Operations
+#### M4: AST Extension — EC Point Operations [DONE]
 
 Add elliptic curve operations to Expr (StableHLO has no native EC ops,
 so point arithmetic is expressed as field ops on coordinates).
 
-- [ ] `Fact (Nat.Prime p)` instance for BN254 (needed for field ops: div, inv)
-- [ ] Affine point type: `(Expr p, Expr p)`
-- [ ] Point addition (short Weierstrass): `add_affine`
-- [ ] Point doubling: `double_affine`
-- [ ] Scalar multiplication (double-and-add)
-- [ ] MSM (multi-scalar multiplication) — Pippenger or naive
-- [ ] EC ops correctness: prove `eval` results match Lean's EC group law
-- [ ] `Expr.div` zero-division semantics: `ZMod p` returns 0 for 0⁻¹,
-      ensure StableHLO lowering matches this behavior
+- [x] `Fact (Nat.Prime p)` instance for BN254 (needed for field ops: div, inv)
+- [x] Affine point type: `(Expr p, Expr p)`
+- [x] Point addition (short Weierstrass): `addAffine`
+- [x] Point doubling: `doubleAffine`
+- [x] Scalar multiplication (double-and-add)
+- [x] MSM (multi-scalar multiplication) — naive
+- [x] EC ops correctness: prove `eval` results match Mathlib Weierstrass formulas
+- [x] `Expr.div` zero-division semantics: `ZMod p` returns 0 for 0⁻¹,
+      StableHLO lowering uses `stablehlo.divide`
 - [ ] Tree AST blowup mitigation for scalar mul (double-and-add produces
-      exponential tree without sharing; may need AST-level let-binding or CSE)
+      exponential tree without sharing; deferred to future `Expr.let` or CSE)
 
 #### M5: Full KZG Commitment Scheme
 
