@@ -77,3 +77,37 @@ def main : IO Unit := do
   IO.println s!"v   = {result.evalValue.eval.val}"
   IO.println s!"q   = {(result.quotientCoeffs.map (fun e => e.eval.val))}"
   IO.println s!"π   = {showPoint result.proof}"
+
+  IO.println ""
+
+  -- M6: Pairing field tower
+  IO.println "=== M6: Pairing Field Tower ==="
+  let a : StableHLO.FieldExt.Fp2 bp := ⟨3, 7⟩
+  let b : StableHLO.FieldExt.Fp2 bp := ⟨5, 11⟩
+  let c := a * b
+  IO.println s!"Fp2: ({a.c0.val}, {a.c1.val}) * ({b.c0.val}, {b.c1.val}) = ({c.c0.val}, {c.c1.val})"
+  let aInv := a⁻¹
+  let check := a * aInv
+  IO.println s!"Fp2: a * a⁻¹ = ({check.c0.val}, {check.c1.val})"
+
+  -- M6: G2 point operations
+  IO.println ""
+  IO.println "=== M6: G2 Point Operations ==="
+  let g2 := StableHLO.ConcretePairing.g2Gen
+  match g2 with
+  | some (x, y) =>
+    IO.println s!"G2.gen.x = ({x.c0.val}, {x.c1.val})"
+    IO.println s!"G2.gen.y = ({y.c0.val}, {y.c1.val})"
+  | none => IO.println "G2.gen = ∞"
+  let g2_2 := StableHLO.ConcretePairing.G2.double g2
+  match g2_2 with
+  | some (x, y) =>
+    IO.println s!"[2]G2.x = ({x.c0.val}, {x.c1.val})"
+    IO.println s!"[2]G2.y = ({y.c0.val}, {y.c1.val})"
+  | none => IO.println "[2]G2 = ∞"
+
+  -- M6: Miller loop (computable but very slow for large primes)
+  IO.println ""
+  IO.println "=== M6: Pairing (Miller Loop) ==="
+  IO.println "(Pairing computation is available but slow for BN254-size primes)"
+  IO.println "e(G1, G2) computation requires optimized Frobenius — deferred to runtime test"
