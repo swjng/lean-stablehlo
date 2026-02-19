@@ -20,3 +20,5 @@ import LeanPrimeIR.StableHLO.Correctness
 import LeanPrimeIR.StableHLO.BN254
 import LeanPrimeIR.StableHLO.EllipticCurve
 import LeanPrimeIR.StableHLO.EllipticCurve.Correctness
+import LeanPrimeIR.StableHLO.Pairing
+import LeanPrimeIR.StableHLO.KZG.Correctness
