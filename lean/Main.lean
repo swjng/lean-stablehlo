@@ -60,3 +60,20 @@ def main : IO Unit := do
   IO.println "=== M4: EC Point Operations ==="
   IO.println s!"G = {showPoint bnG}"
   IO.println s!"[5]G = {showPoint (StableHLO.scalarMul 5 bnG)}"
+
+  IO.println ""
+
+  -- M5: KZG commit + prove
+  IO.println "=== M5: KZG Commit + Prove ==="
+  let srs : StableHLO.KZG.SRS :=
+    { g1Points := [bnG,
+                   StableHLO.scalarMul 2 bnG,
+                   StableHLO.scalarMul 3 bnG,
+                   StableHLO.scalarMul 4 bnG] }
+  let kzgCoeffs : List (ZMod bn254p) := [1, 2, 3, 4]
+  let kzgZ : ZMod bn254p := 5
+  let result := StableHLO.KZG.prove kzgCoeffs kzgZ srs
+  IO.println s!"C   = {showPoint result.commitment}"
+  IO.println s!"v   = {result.evalValue.eval.val}"
+  IO.println s!"q   = {(result.quotientCoeffs.map (fun e => e.eval.val))}"
+  IO.println s!"π   = {showPoint result.proof}"
