@@ -33,6 +33,8 @@ inductive Expr (p : Nat) where
   | sub : Expr p → Expr p → Expr p
   /-- Field negation: `stablehlo.negate` -/
   | neg : Expr p → Expr p
+  /-- Field division: `stablehlo.divide` (a * b⁻¹ in ZMod p) -/
+  | div : Expr p → Expr p → Expr p
   deriving Repr, BEq
 
 /-- Denotational semantics: evaluate an `Expr p` to a value in `ZMod p`.
@@ -46,5 +48,6 @@ def Expr.eval {p : Nat} [NeZero p] : Expr p → ZMod p
   | .mul a b => a.eval * b.eval
   | .sub a b => a.eval - b.eval
   | .neg a => -a.eval
+  | .div a b => a.eval * b.eval⁻¹
 
 end LeanPrimeIR.StableHLO
