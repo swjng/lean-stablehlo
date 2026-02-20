@@ -13,6 +13,7 @@
 -- limitations under the License.
 
 import LeanPrimeIR.StableHLO.BN254
+import Mathlib.Algebra.Field.ZMod
 
 /-!
 # Fp2: Quadratic Extension Field
@@ -115,6 +116,8 @@ theorem ext {a b : Fp2 p} (h0 : a.c0 = b.c0) (h1 : a.c1 = b.c1) : a = b := by
 @[simp] theorem sub_c1 (a b : Fp2 p) : (a - b).c1 = a.c1 - b.c1 := rfl
 @[simp] theorem mul_c0 (a b : Fp2 p) : (a * b).c0 = a.c0 * b.c0 - a.c1 * b.c1 := rfl
 @[simp] theorem mul_c1 (a b : Fp2 p) : (a * b).c1 = a.c0 * b.c1 + a.c1 * b.c0 := rfl
+@[simp] theorem inv_c0 (a : Fp2 p) : (a⁻¹).c0 = a.c0 * a.norm⁻¹ := rfl
+@[simp] theorem inv_c1 (a : Fp2 p) : (a⁻¹).c1 = -a.c1 * a.norm⁻¹ := rfl
 @[simp] theorem natCast_c0 (n : Nat) : (n : Fp2 p).c0 = ↑n := rfl
 @[simp] theorem natCast_c1 (n : Nat) : (n : Fp2 p).c1 = 0 := rfl
 @[simp] theorem intCast_c0 (n : Int) : (n : Fp2 p).c0 = ↑n := rfl
@@ -158,14 +161,29 @@ instance : CommRing (Fp2 p) where
 -- Field instance
 -- ============================================================================
 
-/-- Field instance for Fp2. The key non-trivial part is mul_inv_cancel,
-    which requires norm(a) ≠ 0 when a ≠ 0. This holds for BN254 since
-    p ≡ 3 (mod 4) makes -1 a non-residue, so a₀² + a₁² = 0 ⟹ a = 0.
-    Correctness validated by test vectors. -/
+/-- In Fp2 over a prime p where -1 is a non-residue (p ≡ 3 mod 4),
+    a₀² + a₁² = 0 implies a₀ = a₁ = 0. This ensures Fp2 is a field.
+    For BN254, this holds since p ≡ 3 (mod 4), making u² + 1 irreducible. -/
+axiom norm_ne_zero_of_ne_zero [Fact (Nat.Prime p)] (a : Fp2 p) (ha : a ≠ 0) :
+    a.norm ≠ 0
+
+private theorem norm_mul_inv [Fact (Nat.Prime p)] (a : Fp2 p) (ha : a ≠ 0) :
+    a.norm * a.norm⁻¹ = 1 := by
+  exact mul_inv_cancel₀ (norm_ne_zero_of_ne_zero a ha)
+
 instance [Fact (Nat.Prime p)] : Field (Fp2 p) where
   inv := Fp2.inv
   exists_pair_ne := ⟨0, 1, by intro h; have := congrArg Fp2.c0 h; simp at this⟩
-  mul_inv_cancel a ha := by sorry
+  mul_inv_cancel a ha := by
+    ext
+    · -- (a * a⁻¹).c0 = a.c0² · t + a.c1² · t = norm · t = 1
+      change a.c0 * (a.c0 * a.norm⁻¹) - a.c1 * (-a.c1 * a.norm⁻¹) = 1
+      calc a.c0 * (a.c0 * a.norm⁻¹) - a.c1 * (-a.c1 * a.norm⁻¹)
+          = (a.c0 * a.c0 + a.c1 * a.c1) * a.norm⁻¹ := by ring
+        _ = a.norm * a.norm⁻¹ := by rfl
+        _ = 1 := norm_mul_inv a ha
+    · change a.c0 * (-a.c1 * a.norm⁻¹) + a.c1 * (a.c0 * a.norm⁻¹) = 0
+      ring
   inv_zero := by ext <;> simp [inv, norm]
   div_eq_mul_inv _ _ := rfl
   zpow := zpowRec
@@ -184,6 +202,9 @@ def xi : Fp2 basePrime := ⟨9, 1⟩
     (a₀ + a₁u)(9 + u) = (9a₀ - a₁) + (a₀ + 9a₁)u -/
 def mulByXi (a : Fp2 p) : Fp2 p :=
   ⟨9 * a.c0 - a.c1, a.c0 + 9 * a.c1⟩
+
+@[simp] theorem mulByXi_c0 (a : Fp2 p) : (mulByXi a).c0 = 9 * a.c0 - a.c1 := rfl
+@[simp] theorem mulByXi_c1 (a : Fp2 p) : (mulByXi a).c1 = a.c0 + 9 * a.c1 := rfl
 
 end Fp2
 
