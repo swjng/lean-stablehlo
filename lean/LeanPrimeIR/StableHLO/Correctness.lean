@@ -176,7 +176,7 @@ theorem polyEval_eq_polynomial_eval {p : Nat} [NeZero p]
 -- ============================================================================
 
 /-- `polyEval` respects list cons: `polyEval (c :: cs) z = c + z * polyEval cs z`. -/
-private theorem polyEval_cons {p : Nat} [NeZero p]
+theorem polyEval_cons {p : Nat} [NeZero p]
     (c : ZMod p) (cs : List (ZMod p)) (z : ZMod p) :
     polyEval (c :: cs) z = c + z * polyEval cs z := by
   rw [polyEval_eq_foldr, List.foldr_cons, polyEval_eq_foldr]; ring
