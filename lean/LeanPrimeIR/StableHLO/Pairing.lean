@@ -105,9 +105,13 @@ axiom G2.gen : G2
 
 axiom G2.add_zero (Q : G2) : G2.add Q G2.zero = Q
 axiom G2.add_comm (P Q : G2) : G2.add P Q = G2.add Q P
+axiom G2.add_assoc (P Q R : G2) :
+    G2.add (G2.add P Q) R = G2.add P (G2.add Q R)
 axiom G2.add_neg (Q : G2) : G2.add Q (G2.neg Q) = G2.zero
 axiom G2.smul_add (a b : ZMod scalarPrime) (Q : G2) :
     G2.smul (a + b) Q = G2.add (G2.smul a Q) (G2.smul b Q)
+axiom G2.smul_smul (a b : ZMod scalarPrime) (Q : G2) :
+    G2.smul a (G2.smul b Q) = G2.smul (a * b) Q
 axiom G2.smul_one (Q : G2) : G2.smul 1 Q = Q
 axiom G2.smul_zero (Q : G2) : G2.smul 0 Q = G2.zero
 axiom G2.neg_eq_smul (Q : G2) : G2.neg Q = G2.smul (-1) Q
