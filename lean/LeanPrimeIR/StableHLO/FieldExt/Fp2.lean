@@ -161,17 +161,17 @@ instance : CommRing (Fp2 p) where
 -- Field instance
 -- ============================================================================
 
-/-- In Fp2 over a prime p where -1 is a non-residue (p ≡ 3 mod 4),
-    a₀² + a₁² = 0 implies a₀ = a₁ = 0. This ensures Fp2 is a field.
-    For BN254, this holds since p ≡ 3 (mod 4), making u² + 1 irreducible. -/
-axiom norm_ne_zero_of_ne_zero [Fact (Nat.Prime p)] (a : Fp2 p) (ha : a ≠ 0) :
+/-- For BN254's base prime (p ≡ 3 mod 4), -1 is a quadratic non-residue,
+    so a₀² + a₁² = 0 implies a₀ = a₁ = 0. This ensures Fp2 is a field.
+    Restricted to basePrime to avoid unsound generalization over all primes. -/
+axiom norm_ne_zero_of_ne_zero (a : Fp2 BN254.basePrime) (ha : a ≠ 0) :
     a.norm ≠ 0
 
-private theorem norm_mul_inv [Fact (Nat.Prime p)] (a : Fp2 p) (ha : a ≠ 0) :
+private theorem norm_mul_inv (a : Fp2 BN254.basePrime) (ha : a ≠ 0) :
     a.norm * a.norm⁻¹ = 1 := by
   exact mul_inv_cancel₀ (norm_ne_zero_of_ne_zero a ha)
 
-instance [Fact (Nat.Prime p)] : Field (Fp2 p) where
+instance : Field (Fp2 BN254.basePrime) where
   inv := Fp2.inv
   exists_pair_ne := ⟨0, 1, by intro h; have := congrArg Fp2.c0 h; simp at this⟩
   mul_inv_cancel a ha := by

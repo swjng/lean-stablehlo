@@ -12,6 +12,7 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 
+import LeanPrimeIR.StableHLO.BN254
 import LeanPrimeIR.StableHLO.FieldExt.CubicExt
 import LeanPrimeIR.StableHLO.FieldExt.Fp2
 
@@ -36,11 +37,11 @@ namespace Fp6
 
 -- CommRing: inherited from CubicExt
 
--- Field: axiom + instField
-axiom delta_ne_zero {p : Nat} [Fact (Nat.Prime p)]
-    (a : Fp6 p) (ha : a ≠ 0) : CubicExt.delta a ≠ 0
+-- Field: axiom + instField (restricted to basePrime for soundness)
+axiom delta_ne_zero
+    (a : Fp6 BN254.basePrime) (ha : a ≠ 0) : CubicExt.delta a ≠ 0
 
-instance [Fact (Nat.Prime p)] : Field (Fp6 p) :=
+instance : Field (Fp6 BN254.basePrime) :=
   CubicExt.instField delta_ne_zero
 
 -- Domain-specific convenience functions

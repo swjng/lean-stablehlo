@@ -12,6 +12,7 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 
+import LeanPrimeIR.StableHLO.BN254
 import LeanPrimeIR.StableHLO.FieldExt.QuadExt
 import LeanPrimeIR.StableHLO.FieldExt.Fp6
 
@@ -36,11 +37,11 @@ namespace Fp12
 
 -- CommRing: inherited from QuadExt
 
--- Field: axiom + instField
-axiom norm_ne_zero {p : Nat} [Fact (Nat.Prime p)]
-    (a : Fp12 p) (ha : a ≠ 0) : QuadExt.norm a ≠ 0
+-- Field: axiom + instField (restricted to basePrime for soundness)
+axiom norm_ne_zero
+    (a : Fp12 BN254.basePrime) (ha : a ≠ 0) : QuadExt.norm a ≠ 0
 
-instance [Fact (Nat.Prime p)] : Field (Fp12 p) :=
+instance : Field (Fp12 BN254.basePrime) :=
   QuadExt.instField norm_ne_zero
 
 -- Domain-specific functions
