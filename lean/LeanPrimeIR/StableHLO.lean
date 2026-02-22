@@ -22,6 +22,7 @@ import LeanPrimeIR.StableHLO.EllipticCurve
 import LeanPrimeIR.StableHLO.EllipticCurve.Correctness
 import LeanPrimeIR.StableHLO.Pairing
 import LeanPrimeIR.StableHLO.KZG.Correctness
+import LeanPrimeIR.StableHLO.KZG.Security
 import LeanPrimeIR.StableHLO.FieldExt.Fp2
 import LeanPrimeIR.StableHLO.FieldExt.Fp6
 import LeanPrimeIR.StableHLO.FieldExt.Fp12
