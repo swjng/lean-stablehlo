@@ -77,10 +77,12 @@ private theorem gt_pow_combine (g : GT) (v v' : ZMod scalarPrime) :
 -- ============================================================================
 
 /-- **Evaluation binding**: two valid openings for the same (C, z) with v ≠ v'
-    yield a t-SDH pair witness W such that e(W, [s-z]G₂) = e(G₁, G₂).
+    yield a witness W such that e(W, [s-z]G₂) = e(G₁, G₂).
 
-    This reduces evaluation binding to the t-SDH assumption:
-    an adversary that breaks evaluation binding can extract a t-SDH pair. -/
+    This witnesses the q-DLOG relation: given [s-z]G₂ from the SRS,
+    the adversary computes W = [(v'-v)⁻¹](π - π') satisfying
+    e(W, [s-z]G₂) = e(G₁, G₂), implying W = [(s-z)⁻¹]G₁.
+    Existence of such W contradicts the t-SDH assumption. -/
 theorem evaluation_binding
     (C : Pairing.G1) (z v v' : ZMod scalarPrime)
     (π π' : Pairing.G1)
