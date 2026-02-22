@@ -80,6 +80,10 @@ axiom G1.smul_one (P : G1) : G1.smul 1 P = P
 axiom G1.smul_zero (P : G1) : G1.smul 0 P = G1.zero
 axiom G1.neg_eq_smul (P : G1) : G1.neg P = G1.smul (-1) P
 
+/-- Prime-order group: scalar mul on generator is injective. -/
+axiom G1.smul_injective (a b : ZMod scalarPrime) :
+    G1.smul a G1.gen = G1.smul b G1.gen → a = b
+
 -- ============================================================================
 -- G₂ Operations
 -- ============================================================================
@@ -130,6 +134,10 @@ axiom GT.pow_add (a : GT) (m n : ZMod scalarPrime) :
     GT.pow a (m + n) = GT.mul (GT.pow a m) (GT.pow a n)
 axiom GT.pow_mul (a : GT) (m n : ZMod scalarPrime) :
     GT.pow (GT.pow a m) n = GT.pow a (m * n)
+
+/-- Abelian group: (a · b)ⁿ = aⁿ · bⁿ. -/
+axiom GT.pow_mul_dist (a b : GT) (n : ZMod scalarPrime) :
+    GT.pow (GT.mul a b) n = GT.mul (GT.pow a n) (GT.pow b n)
 
 -- ============================================================================
 -- Pairing Function + Axioms
