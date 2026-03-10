@@ -14,12 +14,79 @@ limitations under the License. -->
 
 # lean-prime-ir
 
-Lean 4 → Prime-IR pipeline PoC for KZG commitment scheme.
+Lean 4 library for writing cryptographic protocols that generates formally verified StableHLO MLIR.
+Users write protocols using a deep-embedded DSL, prove correctness in Lean, and extract verified MLIR through a trivial serializer.
+
+KZG commitment scheme is the first PoC to validate the approach.
+
+## Architecture
+
+**Deep Embedding + Extraction** (Fiat-Crypto style).
+
+```
+Lean DSL (StableHLO AST represented as Lean types)
+    ↓  proofs inside Lean (Expr.eval : ZMod p)
+Proven StableHLO AST (Lean term)
+    ↓  trivial serializer (AST → text, ~40 lines)
+StableHLO MLIR text
+```
+
+- **Trust boundary**: only the serializer is unverified (trivially inspectable)
+- **Prior art**: Fiat-Crypto (production use in Chrome/BoringSSL)
 
 ## Structure
 
 - **`mlir/`** — Hand-written Prime-IR tests validating KZG over BN254
-- **`lean/`** — Lean 4 project for 𝔽ₚ/KZG math structure definitions
+- **`lean/`** — Lean 4 project: deep-embedded StableHLO DSL + KZG correctness proofs
+
+```
+lean/LeanPrimeIR/
+├── StableHLO/
+│   ├── Expr.lean          -- Expr p inductive + eval semantics (ZMod p)
+│   ├── Serialize.lean     -- AST → MLIR text serializer
+│   ├── Polynomial.lean    -- Horner + synthetic division (pure AST)
+│   ├── EllipticCurve.lean -- Affine point ops, scalar mul, MSM
+│   ├── EllipticCurve/
+│   │   └── Correctness.lean
+│   ├── KZG.lean           -- KZG commit + prove + verify
+│   ├── KZG/
+│   │   └── Correctness.lean
+│   ├── Pairing.lean       -- Pairing axiomatization
+│   ├── Correctness.lean   -- End-to-end correctness theorems
+│   └── BN254.lean         -- BN254 field/curve parameters
+├── IR.lean                -- (M1) MLIR type repr + IRBuilder monad
+├── Field.lean             -- (M1) StableHLO field ops
+├── Polynomial.lean        -- (M1) String codegen polynomial ops
+├── KZG.lean               -- (M1) String codegen KZG
+└── EllipticCurve.lean     -- (M1) String codegen EC ops
+```
+
+## Status
+
+### Phase 1: KZG PoC ✅
+
+| Milestone | Description | Status |
+|-----------|-------------|--------|
+| M0 | Hand-written Prime-IR KZG tests | ✅ Done |
+| M1 | Lean 4 string codegen (proof-free PoC) | ✅ Done |
+| M2 | Deep embedding: StableHLO AST + ZMod semantics | ✅ Done |
+| M3 | Correctness theorems (Horner, synthetic div, KZG evaluate) | ✅ Done |
+| M4 | AST extension: EC point ops (add, double, scalar mul, MSM) | ✅ Done |
+| M5 | Full KZG: commit + prove + verify (end-to-end proof, no sorry) | ✅ Done |
+
+### Phase 2: Library Interface 🔜
+
+| Milestone | Description | Status |
+|-----------|-------------|--------|
+| M6 | Reusable primitive library (PrimeField, Polynomial, EllipticCurve modules) | ⬜ Planned |
+| M7 | DSL usability (macros, ergonomic syntax) | ⬜ Planned |
+| M8 | Serializer hardening (round-trip tests, MLIR conformance) | ⬜ Planned |
+
+### Phase 3: Production 🔜
+
+| Milestone | Description | Status |
+|-----------|-------------|--------|
+| M9 | Production pipeline (CI, integration with prime-ir-opt, documentation) | ⬜ Planned |
 
 ## M0: Prime-IR KZG Tests
 
@@ -42,6 +109,14 @@ cd mlir
 ./run.sh kzg_prove
 ```
 
-## M1: Lean 4 Project
+## M5: KZG Correctness (no sorry)
 
-Skeleton only. Implementation follows M0 validation.
+End-to-end theorem: commit → prove → verify pipeline proven via polynomial identity + pairing bilinearity.
+
+- `horner_correct`: Horner evaluation matches `polyEval` spec
+- `syntheticDiv_correct`: synthetic division matches spec
+- `syntheticDiv_polynomial_correct`: `q(x) · (x - z) + p(z) = p(x)`
+- `evaluate_correct`: end-to-end KZG evaluate
+- `kzg_correctness`: full commit → prove → verify correctness
+
+Pairing is axiomatized (bilinearity + non-degeneracy). Axiom consistency verified via trivial model (G₁ = G₂ = G_T = ZMod p, e(a,b) = a·b).
