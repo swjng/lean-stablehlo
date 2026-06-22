@@ -28,3 +28,6 @@ lean_lib «LeanStableHLO» where
 
 lean_exe «lean-stablehlo» where
   root := `Main
+
+lean_exe «pairing-test» where
+  root := `PairingTest

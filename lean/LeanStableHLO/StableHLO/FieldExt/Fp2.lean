@@ -88,10 +88,20 @@ instance : NatCast (Fp2 p) := ⟨Fp2.natCast⟩
 instance : IntCast (Fp2 p) := ⟨Fp2.intCast⟩
 instance : Div (Fp2 p) := ⟨fun a b => a * b⁻¹⟩
 
-/-- Power by natural number via repeated squaring. -/
+/-- Power by natural number (naive, linear; used by the `Monoid` instance). -/
 def npow : Nat → Fp2 p → Fp2 p
   | 0, _ => 1
   | n + 1, a => a * npow n a
+
+/-- Power by natural number via repeated squaring (binary; evaluatable for
+    large exponents, unlike the linear `npow`). -/
+def powNat (a : Fp2 p) (n : Nat) : Fp2 p :=
+  if n = 0 then 1
+  else
+    (n.bits).foldl
+      (fun (acc, running) bit =>
+        (if bit then acc * running else acc, running * running))
+      (1, a) |>.1
 
 instance : HPow (Fp2 p) Nat (Fp2 p) := ⟨fun a n => npow n a⟩
 instance : Pow (Fp2 p) Nat := ⟨fun a n => npow n a⟩

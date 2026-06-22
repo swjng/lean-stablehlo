@@ -62,11 +62,12 @@ private theorem gt_cancel_common
     (a b c : GT) (n : ZMod scalarPrime) :
     GT.pow (GT.mul (GT.mul a b) (GT.mul (GT.pow a (-1)) c)) n =
     GT.pow (GT.mul b c) n := by
-  congr 1
-  rw [GT.mul_assoc, ← GT.mul_assoc b (GT.pow a (-1)) c,
-      GT.mul_comm b (GT.pow a (-1)), GT.mul_assoc (GT.pow a (-1)) b c,
-      ← GT.mul_assoc a (GT.pow a (-1)) (GT.mul b c),
-      GT.mul_inv, GT.one_mul]
+  have h : GT.mul (GT.mul a b) (GT.mul (GT.pow a (-1)) c) = GT.mul b c := by
+    rw [GT.mul_assoc, ← GT.mul_assoc b (GT.pow a (-1)) c,
+        GT.mul_comm b (GT.pow a (-1)), GT.mul_assoc (GT.pow a (-1)) b c,
+        ← GT.mul_assoc a (GT.pow a (-1)) (GT.mul b c),
+        GT.mul_inv, GT.one_mul]
+  rw [h]
 
 private theorem gt_pow_combine (g : GT) (v v' : ZMod scalarPrime) :
     GT.mul (GT.pow g (-v)) (GT.pow g v') = GT.pow g (v' - v) := by

@@ -57,10 +57,16 @@ def ateLoopCount : Nat := 29793968203157093288
     Coefficients from MSB to LSB. Each entry ∈ {-1, 0, 1}.
     The first (MSB) entry is always 1 and is used as the starting point. -/
 def ateLoopNAF : List Int :=
-  [1, 0, 1, 0, 0, -1, 0, 0, -1, 0, 1, 0, 0, 0, -1, 0,
-   0, -1, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0,
-   0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0, 0, 0,
-   -1, 0, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1]
+  [1, 0, -1, 0, 1, 0, 0, 0, -1, 0, -1, 0, 0, 0, -1, 0,
+   1, 0, -1, 0, 0, -1, 0, 0, 0, 0, 0, 1, 0, 0, -1, 0,
+   1, 0, 0, -1, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0, -1, 0,
+   -1, 0, 0, 1, 0, 0, 0, -1, 0, 0, -1, 0, 1, 0, 1, 0,
+   0, 0]
+
+/-- The NAF list (MSB-first signed binary) encodes exactly `6x + 2`.
+    Machine-checked guard against regression of the loop count. -/
+example : ateLoopNAF.foldl (fun acc d => acc * 2 + d) 0 = (6 * (bnX : Int) + 2) := by
+  native_decide
 
 -- ============================================================================
 -- Sparse Fp12 from Line Evaluation
@@ -70,11 +76,18 @@ def ateLoopNAF : List Int :=
 def fp2ToFp12_00 (a : Fp2 basePrime) : Fp12 basePrime :=
   ⟨⟨a, 0, 0⟩, ⟨0, 0, 0⟩⟩
 
-/-- Create a sparse Fp12 line evaluation result.
-    A line function evaluates to an element of the form:
-    a₀ + a₁·w where a₀, a₁ are sparse in Fp6. -/
+/-- Embed a sparse line evaluation into `Fp12`.
+
+    With the tower `Fp12 = Fp6[w]/(w²-v)`, `Fp6 = Fp2[v]/(v³-ξ)` (basis
+    `{1, v, v², w, vw, v²w}`) and the D-type twist map `(x',y') ↦ (x'w², y'w³)`,
+    the Miller line `ℓ(P) = y_P - λ_E x_P + (λ_E X_T - Y_T)` evaluates to
+    `y_P · 1 + (-λ x_P) · w + (λ x_T - y_T) · vw` (using `w³ = vw`).
+
+    The arguments keep their original names from the line steps:
+    `a00 = λx_T - y_T` (→ `vw` slot), `a01 = -λx_P` (→ `w` slot),
+    `a10 = y_P` (→ `1` slot). -/
 def mkLineFp12 (a00 a01 a10 : Fp2 basePrime) : Fp12 basePrime :=
-  ⟨⟨a00, a01, 0⟩, ⟨a10, 0, 0⟩⟩
+  ⟨⟨a10, 0, 0⟩, ⟨a01, a00, 0⟩⟩
 
 -- ============================================================================
 -- Line Function: Doubling Step
@@ -94,10 +107,10 @@ def doublingStep (T : Fp2 basePrime × Fp2 basePrime)
   let lambda := (3 : Fp2 basePrime) * xT * xT / ((2 : Fp2 basePrime) * yT)
   let xT' := lambda * lambda - (2 : Fp2 basePrime) * xT
   let yT' := lambda * (xT - xT') - yT
-  -- Line evaluation at P (sparse Fp12):
-  --   c0.c0 = λ·xT - yT  (Fp2 coefficient of 1)
-  --   c0.c1 = -λ·xP      (Fp2 coefficient of v, but xP is in Fp so embed)
-  --   c1.c0 = yP          (Fp2 coefficient of w)
+  -- Line evaluation at P, sparse in the {1, w, vw} slots (see `mkLineFp12`):
+  --   ell_vv  = λ·xT - yT  → vw coefficient
+  --   ell_vw  = -λ·xP      → w  coefficient
+  --   ell_vvw = yP         → 1  coefficient
   let ell_vv := lambda * xT - yT
   let ell_vw : Fp2 basePrime := ⟨-xP, 0⟩ * lambda
   let ell_vvw : Fp2 basePrime := ⟨yP, 0⟩
@@ -125,6 +138,24 @@ def additionStep (T : Fp2 basePrime × Fp2 basePrime)
   ((xT', yT'), mkLineFp12 ell_vv ell_vw ell_vvw)
 
 -- ============================================================================
+-- Twisted Frobenius (for the optimal-ate final steps)
+-- ============================================================================
+
+/-- Twisted-Frobenius constants for the BN254 sextic twist (ξ = 9 + u):
+    γ₁ = ξ^((p-1)/3), γ₂ = ξ^((p-1)/2). Spec-level (computed by direct
+    exponentiation; correctness, not speed, is what matters). -/
+def frobGammaX : Fp2 basePrime := Fp2.powNat Fp2.xi ((basePrime - 1) / 3)
+def frobGammaY : Fp2 basePrime := Fp2.powNat Fp2.xi ((basePrime - 1) / 2)
+
+/-- Frobenius endomorphism ψ on the twist `E'(F_{p²})`:
+    `ψ(x, y) = (γ₁ · x̄, γ₂ · ȳ)`, where `x̄` is the `F_{p²}`-conjugate (`= xᵖ`,
+    since `p ≡ 3 mod 4`). Used for the two optimal-ate final line steps. -/
+def g2Frobenius (Q : Fp2 basePrime × Fp2 basePrime) :
+    Fp2 basePrime × Fp2 basePrime :=
+  let (x, y) := Q
+  (frobGammaX * x.conj, frobGammaY * y.conj)
+
+-- ============================================================================
 -- Miller Loop
 -- ============================================================================
 
@@ -144,7 +175,7 @@ def millerLoop (P : Option (ZMod basePrime × ZMod basePrime))
     let negQ := (xQ, -yQ)
     -- Start with T = Q, f = 1
     -- NAF: first bit is 1 (MSB), so skip it and start the loop from index 1
-    let (f, _T) := ateLoopNAF.tail.foldl
+    let (f, T_final) := ateLoopNAF.tail.foldl
       (fun (f, T) si =>
         -- Doubling step
         let (T', ell) := doublingStep T xP yP
@@ -159,6 +190,14 @@ def millerLoop (P : Option (ZMod basePrime × ZMod basePrime))
         else
           (f', T'))
       (1, (xQ, yQ))
-    f
+    -- Optimal-ate final steps for BN curves: two extra line evaluations with
+    -- π(Q) and -π²(Q) (the twisted Frobenius). Omitting these yields a
+    -- non-degenerate but non-bilinear map.
+    let q1 := g2Frobenius (xQ, yQ)
+    let q2 := g2Frobenius q1
+    let nq2 := (q2.1, -q2.2)
+    let (T₁, ell₁) := additionStep T_final q1 xP yP
+    let (_, ell₂) := additionStep T₁ nq2 xP yP
+    f * ell₁ * ell₂
 
 end LeanStableHLO.StableHLO.ConcretePairing

@@ -56,28 +56,22 @@ def conjugateFp12 (f : Fp12 basePrime) : Fp12 basePrime := f.conj
 -- Easy Part: f^((p⁶ - 1)(p² + 1))
 -- ============================================================================
 
-/-- Easy part of the final exponentiation.
-    1. f₁ = f^(p⁶ - 1) = conj(f) · f⁻¹
-    2. f₂ = f₁^(p² + 1) = frob₂(f₁) · f₁
+/-- Easy part of the final exponentiation: `f^((p⁶ - 1)(p² + 1))`.
+    1. `f₁ = f^(p⁶ - 1) = conj(f) · f⁻¹`
+       (the p⁶-Frobenius on `F_{p¹²} = F_{p⁶}(w)`, `w² ∈ F_{p⁶}` a non-residue,
+       acts as the `F_{p⁶}`-conjugation `a + bw ↦ a - bw`).
+    2. `f₂ = f₁^(p² + 1) = f₁^(p²) · f₁`.
 
-    The p⁶-power is just conjugation in F_p¹², and f⁻¹ is the
-    actual inverse. After this step, f₁ is in the cyclotomic subgroup
-    (f₁ · conj(f₁) = 1). -/
+    `f₁^(p²)` is the `p²`-power Frobenius. Rather than the optimized
+    coefficient formulas (which need precomputed Frobenius constants and are a
+    common source of bugs), we compute it by direct exponentiation
+    `powNat f₁ (p²)`. This is a spec-level definition used only inside the
+    pairing axioms, so correctness — not speed — is what matters here. -/
 def easyPart (f : Fp12 basePrime) : Fp12 basePrime :=
-  -- f^(p⁶ - 1): conjugate then divide
+  -- f^(p⁶ - 1): conjugate then divide.
   let f1 := conjugateFp12 f * f⁻¹
-  -- f^(p² + 1): for the cyclotomic subgroup, frob_p² can be simplified.
-  -- For now, use naive squaring of f1's p²-power via repeated Frobenius.
-  -- frob_p²(f1) = f1^(p²). In the cyclotomic subgroup this can be computed
-  -- via coefficient manipulation. For simplicity, we use:
-  -- f1^(p²+1) = f1^(p²) * f1
-  -- We approximate frob_p² as squaring the Frobenius twice.
-  -- For a correct but simple implementation: just compute (f1)^(p²+1) naively.
-  -- Since p is huge, we actually use the identity that for cyclotomic elements,
-  -- f^(p²) can be computed via coefficient transforms.
-  -- Simplified: skip frob_p² optimization, just return f1 for now
-  -- and fold frob into the hard part.
-  f1
+  -- f^(p² + 1) = f₁^(p²) · f₁, with f₁^(p²) computed directly.
+  Fp12.powNat f1 (basePrime ^ 2) * f1
 
 -- ============================================================================
 -- Hard Part: f^((p⁴ - p² + 1) / r)
