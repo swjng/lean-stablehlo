@@ -12,19 +12,12 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 
-import Lake
-open Lake DSL
+import LeanStableHLO.IR
 
-package «lean-stablehlo» where
-  leanOptions := #[
-    ⟨`autoImplicit, false⟩
-  ]
+namespace LeanStableHLO.EllipticCurve
 
-require "leanprover-community" / "mathlib" @ git "v4.27.0"
+-- EC point operations via StableHLO field ops
+-- TODO: implement in M1+ (StableHLO has no native EC ops;
+-- point arithmetic will be expressed as field ops on coordinates)
 
-@[default_target]
-lean_lib «LeanStableHLO» where
-  srcDir := "."
-
-lean_exe «lean-stablehlo» where
-  root := `Main
+end LeanStableHLO.EllipticCurve

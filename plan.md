@@ -1,4 +1,4 @@
-# lean-prime-ir Roadmap
+# lean-stablehlo Roadmap
 
 ## Goal
 
@@ -30,7 +30,7 @@ StableHLO MLIR text
 
 Prove the deep embedding approach works end-to-end with KZG.
 
-#### M0: Hand-written Prime-IR KZG Tests [DONE]
+#### M0: Hand-written StableHLO KZG Tests [DONE]
 
 Validate KZG pipeline with hand-written MLIR.
 
@@ -165,7 +165,7 @@ Strengthen trust in the serializer (the only unverified component).
 ```
 Mathlib (ZMod, Polynomial, ...)
     ↑
-lean-prime-ir (this project — library)
+lean-stablehlo (this project — library)
     ↑ (used by)                ↓ (generates)
 user protocols              StableHLO MLIR
                                ↓ (consumed by)

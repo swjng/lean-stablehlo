@@ -12,19 +12,9 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 
-import Lake
-open Lake DSL
-
-package «lean-stablehlo» where
-  leanOptions := #[
-    ⟨`autoImplicit, false⟩
-  ]
-
-require "leanprover-community" / "mathlib" @ git "v4.27.0"
-
-@[default_target]
-lean_lib «LeanStableHLO» where
-  srcDir := "."
-
-lean_exe «lean-stablehlo» where
-  root := `Main
+import LeanStableHLO.IR
+import LeanStableHLO.Field
+import LeanStableHLO.Polynomial
+import LeanStableHLO.EllipticCurve
+import LeanStableHLO.KZG
+import LeanStableHLO.StableHLO

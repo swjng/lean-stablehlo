@@ -1,4 +1,4 @@
-<!-- Copyright 2026 The PrimeIR Authors.
+<!-- Copyright 2026 Soowon Jeong.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License. -->
 
-# lean-prime-ir
+# lean-stablehlo
 
 Lean 4 library for writing cryptographic protocols that generates formally verified StableHLO MLIR.
 Users write protocols using a deep-embedded DSL, prove correctness in Lean, and extract verified MLIR through a trivial serializer.
@@ -36,11 +36,11 @@ StableHLO MLIR text
 
 ## Structure
 
-- **`mlir/`** — Hand-written Prime-IR tests validating KZG over BN254
+- **`mlir/`** — Hand-written StableHLO tests validating KZG over BN254
 - **`lean/`** — Lean 4 project: deep-embedded StableHLO DSL + KZG correctness proofs
 
 ```
-lean/LeanPrimeIR/
+lean/LeanStableHLO/
 ├── StableHLO/
 │   ├── Expr.lean          -- Expr p inductive + eval semantics (ZMod p)
 │   ├── Serialize.lean     -- AST → MLIR text serializer
@@ -67,7 +67,7 @@ lean/LeanPrimeIR/
 
 | Milestone | Description | Status |
 |-----------|-------------|--------|
-| M0 | Hand-written Prime-IR KZG tests | ✅ Done |
+| M0 | Hand-written StableHLO KZG tests | ✅ Done |
 | M1 | Lean 4 string codegen (proof-free PoC) | ✅ Done |
 | M2 | Deep embedding: StableHLO AST + ZMod semantics | ✅ Done |
 | M3 | Correctness theorems (Horner, synthetic div, KZG evaluate) | ✅ Done |
@@ -88,7 +88,7 @@ lean/LeanPrimeIR/
 |-----------|-------------|--------|
 | M9 | Production pipeline (CI, integration with prime-ir-opt, documentation) | ⬜ Planned |
 
-## M0: Prime-IR KZG Tests
+## M0: StableHLO KZG Tests
 
 Test vector: p(x) = 1 + 2x + 3x² + 4x³, SRS = [G, 2G, 3G, 4G]
 
@@ -98,16 +98,7 @@ Test vector: p(x) = 1 + 2x + 3x² + 4x³, SRS = [G, 2G, 3G, 4G]
 | `kzg_commit` | MSM commitment (3-way comparison) | C = 30 · G |
 | `kzg_prove` | Full KZG prove pipeline | C = 30 · G, π = 175 · G |
 
-### Running
-
-Requires `zkir` build with `prime-ir-opt`:
-
-```bash
-cd mlir
-./run.sh kzg_evaluate
-./run.sh kzg_commit
-./run.sh kzg_prove
-```
+The `mlir/` files are reference test vectors in the StableHLO dialect, originally validated against an external MLIR toolchain.
 
 ## M5: KZG Correctness (no sorry)
 
